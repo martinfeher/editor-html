@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import defaultProjectSnapshot from '../../projects/business-card-project-2026-05-03b-16-37-47.json'
-
 export interface TextBlock {
   kind: 'text'
   id: string
@@ -487,7 +485,7 @@ function createTextBlock(partial?: Partial<Omit<TextBlock, 'kind'>>): TextBlock 
     content: partial?.content ?? 'Your text',
     x: partial?.x ?? 8,
     y: partial?.y ?? 12,
-    widthPct: partial?.widthPct ?? 34,
+    widthPct: partial?.widthPct ?? 44,
     heightPct: partial?.heightPct ?? 18,
     fontSize: partial?.fontSize ?? 16,
     color: partial?.color ?? '#1a1a1a',
@@ -538,40 +536,12 @@ function defaultBackBlocks(): CardBlock[] {
   ]
 }
 
-function editorPagesFromSnapshot(snapshot: unknown): EditorPage[] | null {
-  if (!isProjectFileV2(snapshot)) return null
-  const nextPages: EditorPage[] = []
-  for (const pg of snapshot.pages) {
-    const p = parseSerializedPage(pg)
-    if (p) nextPages.push(p)
-  }
-  return nextPages.length > 0 ? nextPages : null
-}
+const pages = ref<EditorPage[]>([
+  { id: newEditorPageId(), blocks: defaultFrontBlocks() },
+  { id: newEditorPageId(), blocks: defaultBackBlocks() },
+])
 
-const snapshotPages = editorPagesFromSnapshot(defaultProjectSnapshot)
-const snapshotMeta = isProjectFileV2(defaultProjectSnapshot) ? defaultProjectSnapshot : null
-
-const pages = ref<EditorPage[]>(
-  snapshotPages ?? [
-    { id: newEditorPageId(), blocks: defaultFrontBlocks() },
-    { id: newEditorPageId(), blocks: defaultBackBlocks() },
-  ]
-)
-
-if (snapshotPages) {
-  syncIdCounterFromPages(snapshotPages)
-  syncPageIdCounterFromPages(snapshotPages)
-}
-
-const activePageIndex = ref(
-  snapshotMeta && snapshotPages
-    ? clampActivePageIndex(snapshotMeta.activePageIndex, snapshotPages.length)
-    : 0
-)
-
-if (snapshotMeta) {
-  editorZoom.value = clampZoom(snapshotMeta.editorZoom)
-}
+const activePageIndex = ref(0)
 
 function activeBlocks(): CardBlock[] {
   return pages.value[activePageIndex.value]!.blocks
@@ -579,9 +549,7 @@ function activeBlocks(): CardBlock[] {
 
 const activeBlocksList = computed(() => pages.value[activePageIndex.value]?.blocks ?? [])
 
-const selectedId = ref<string | null>(
-  pages.value[activePageIndex.value]?.blocks[0]?.id ?? null
-)
+const selectedId = ref<string | null>(pages.value[0]?.blocks[0]?.id ?? null)
 
 const selected = computed(() => activeBlocksList.value.find((b) => b.id === selectedId.value) ?? null)
 const selectedText = computed(() => (selected.value?.kind === 'text' ? selected.value : null))
@@ -1833,7 +1801,7 @@ function clearSelectionOnCanvasBackground(e: PointerEvent) {
 }
 
 .sidebar-right {
-  width: 220px;
+  width: 280px;
   flex-shrink: 0;
   background: #f4f5f8;
   border-left: 1px solid #d8dce4;
