@@ -2,5 +2,8 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-07-15',
   devtools: { enabled: true },
-  ssr: false, 
+  ssr: false,
+  experimental: {
+    viteEnvironmentApi: true,
+  },
 })
